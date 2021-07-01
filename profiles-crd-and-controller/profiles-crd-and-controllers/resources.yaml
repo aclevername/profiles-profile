@@ -1,0 +1,713 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: profiles-system
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.4.1
+  creationTimestamp: null
+  name: profilecatalogsources.weave.works
+spec:
+  group: weave.works
+  names:
+    kind: ProfileCatalogSource
+    listKind: ProfileCatalogSourceList
+    plural: profilecatalogsources
+    singular: profilecatalogsource
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: ProfileCatalogSource is the Schema for the ProfileCatalogSources
+          API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: ProfileCatalogSourceSpec defines the desired state of ProfileCatalogSource
+            properties:
+              profiles:
+                description: Profiles is the list of profiles exposed by the catalog
+                items:
+                  description: ProfileCatalogEntry defines details about a given profile.
+                  properties:
+                    catalogSource:
+                      description: CatalogSource is the name of the catalog the profile
+                        is listed in
+                      type: string
+                    description:
+                      description: Profile description
+                      type: string
+                    maintainer:
+                      description: Maintainer is the name of the author(s)
+                      type: string
+                    name:
+                      description: Profile name
+                      type: string
+                    prerequisites:
+                      description: Prerequisites are a list of dependencies required
+                        by the profile
+                      items:
+                        type: string
+                      type: array
+                    tag:
+                      pattern: ^([a-zA-Z\-]+\/)?(v)?(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(\.(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(\+[0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*)?$
+                      type: string
+                    url:
+                      description: URL is the full URL path to the profile.yaml
+                      type: string
+                  type: object
+                type: array
+              repositories:
+                description: Repos contains a list of repositories to scan for profiles
+                items:
+                  description: Repository defines the list of repositories to scan
+                    for profiles
+                  properties:
+                    secretRef:
+                      description: The secret name containing the Git credentials.
+                        For HTTPS repositories the secret must contain username and
+                        password fields. For SSH repositories the secret must contain
+                        identity, identity.pub and known_hosts fields.
+                      properties:
+                        name:
+                          description: Name of the referent
+                          type: string
+                      required:
+                      - name
+                      type: object
+                    url:
+                      description: URL is the URL of the repository. When using SSH
+                        credentials to access must be in format ssh://git@github.com/stefanprodan/podinfo
+                        When using username/password must be in format https://github.com/stefanprodan/podinfo
+                      type: string
+                  type: object
+                type: array
+            type: object
+          status:
+            description: ProfileCatalogSourceStatus defines the observed state of
+              ProfileCatalogSource
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.4.1
+  creationTimestamp: null
+  name: profiledefinitions.weave.works
+spec:
+  group: weave.works
+  names:
+    kind: ProfileDefinition
+    listKind: ProfileDefinitionList
+    plural: profiledefinitions
+    singular: profiledefinition
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: ProfileDefinition is the Schema for the profiles API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: ProfileDefinitionSpec defines the desired state of ProfileDefinition
+            properties:
+              artifacts:
+                description: Artifacts is a list of Profile artifacts
+                items:
+                  description: Artifact defines a bundled resource of the components
+                    for this profile.
+                  properties:
+                    chart:
+                      description: Chart defines properties to access a remote chart.
+                        This is an optional value. It is ignored in case Path is defined.
+                      properties:
+                        defaultValues:
+                          description: DefaultValues holds the default values for
+                            this Helm release Artifact. These can be overridden by
+                            the user, but will otherwise apply.
+                          type: string
+                        name:
+                          description: Name defines the name of the chart at the remote
+                            repository
+                          type: string
+                        path:
+                          description: Path is the local path to the Artifact in the
+                            Profile repo. This is an optional value. If defined, it
+                            takes precedence over other Chart fields.
+                          type: string
+                        url:
+                          description: URL is the URL of the Helm repository containing
+                            a Helm chart and possible values
+                          type: string
+                        version:
+                          description: Version defines the version of the chart at
+                            the remote repository
+                          type: string
+                      type: object
+                    kustomize:
+                      description: Kustomize defines properties to for a kustmize
+                        artifact.
+                      properties:
+                        path:
+                          description: Path is the local path to the Artifact in the
+                            Profile repo.
+                          type: string
+                      type: object
+                    name:
+                      description: Name is the name of the Artifact
+                      type: string
+                    profile:
+                      description: Profiles defines properties to access a remote
+                        profile.
+                      properties:
+                        source:
+                          description: Source defines properties of the source of
+                            the profile
+                          properties:
+                            branch:
+                              default: main
+                              description: 'Branch is the git repo branch containing
+                                the profile definition (default: main)'
+                              type: string
+                            path:
+                              description: Path is the location in the git repo containing
+                                the profile definition
+                              type: string
+                            tag:
+                              description: Tag is the git tag containing the profile
+                                definition
+                              type: string
+                            url:
+                              description: ProfileURL is a fully qualified URL to
+                                a profile repo
+                              type: string
+                          type: object
+                      type: object
+                  type: object
+                type: array
+              description:
+                description: Profile description
+                type: string
+              maintainer:
+                description: Maintainer is the name of the author(s)
+                type: string
+              name:
+                description: Profile name
+                type: string
+              prerequisites:
+                description: Prerequisites are a list of dependencies required by
+                  the profile
+                items:
+                  type: string
+                type: array
+            type: object
+          status:
+            description: ProfileDefinitionStatus defines the observed state of ProfileDefinition
+              This is not used
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.4.1
+  creationTimestamp: null
+  name: profileinstallations.weave.works
+spec:
+  group: weave.works
+  names:
+    kind: ProfileInstallation
+    listKind: ProfileInstallationList
+    plural: profileinstallations
+    singular: profileinstallation
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.conditions[?(@.type=="Ready")].status
+      name: Ready
+      type: string
+    - jsonPath: .status.conditions[?(@.type=="Ready")].message
+      name: Status
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: ProfileInstallation is the Schema for the profileinstallations
+          API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: ProfileInstallationSpec defines the desired state of a ProfileInstallation
+            properties:
+              catalog:
+                description: Catalog defines properties of the catalog reference
+                properties:
+                  catalog:
+                    description: Catalog defines the name of the catalog to get the
+                      profile from
+                    type: string
+                  profile:
+                    description: Profile defines the name of the profile
+                    type: string
+                  version:
+                    description: Version defines the version of the catalog to get
+                      the profile from
+                    type: string
+                type: object
+              configMap:
+                description: ConfigMap is the name of the configmap to pull helm values
+                  from
+                type: string
+              source:
+                description: Source defines properties of the source of the profile
+                properties:
+                  branch:
+                    default: main
+                    description: 'Branch is the git repo branch containing the profile
+                      definition (default: main)'
+                    type: string
+                  path:
+                    description: Path is the location in the git repo containing the
+                      profile definition
+                    type: string
+                  tag:
+                    description: Tag is the git tag containing the profile definition
+                    type: string
+                  url:
+                    description: ProfileURL is a fully qualified URL to a profile
+                      repo
+                    type: string
+                type: object
+            type: object
+          status:
+            description: ProfileInstallationStatus defines the observed state of ProfileInstallation
+            properties:
+              conditions:
+                description: Conditions holds the conditions for the ProfileInstallation
+                items:
+                  description: "Condition contains details for one aspect of the current
+                    state of this API Resource. --- This struct is intended for direct
+                    use as an array at the field path .status.conditions.  For example,
+                    type FooStatus struct{     // Represents the observations of a
+                    foo's current state.     // Known .status.conditions.type are:
+                    \"Available\", \"Progressing\", and \"Degraded\"     // +patchMergeKey=type
+                    \    // +patchStrategy=merge     // +listType=map     // +listMapKey=type
+                    \    Conditions []metav1.Condition `json:\"conditions,omitempty\"
+                    patchStrategy:\"merge\" patchMergeKey:\"type\" protobuf:\"bytes,1,rep,name=conditions\"`
+                    \n     // other fields }"
+                  properties:
+                    lastTransitionTime:
+                      description: lastTransitionTime is the last time the condition
+                        transitioned from one status to another. This should be when
+                        the underlying condition changed.  If that is not known, then
+                        using the time when the API field changed is acceptable.
+                      format: date-time
+                      type: string
+                    message:
+                      description: message is a human readable message indicating
+                        details about the transition. This may be an empty string.
+                      maxLength: 32768
+                      type: string
+                    observedGeneration:
+                      description: observedGeneration represents the .metadata.generation
+                        that the condition was set based upon. For instance, if .metadata.generation
+                        is currently 12, but the .status.conditions[x].observedGeneration
+                        is 9, the condition is out of date with respect to the current
+                        state of the instance.
+                      format: int64
+                      minimum: 0
+                      type: integer
+                    reason:
+                      description: reason contains a programmatic identifier indicating
+                        the reason for the condition's last transition. Producers
+                        of specific condition types may define expected values and
+                        meanings for this field, and whether the values are considered
+                        a guaranteed API. The value should be a CamelCase string.
+                        This field may not be empty.
+                      maxLength: 1024
+                      minLength: 1
+                      pattern: ^[A-Za-z]([A-Za-z0-9_,:]*[A-Za-z0-9_])?$
+                      type: string
+                    status:
+                      description: status of the condition, one of True, False, Unknown.
+                      enum:
+                      - "True"
+                      - "False"
+                      - Unknown
+                      type: string
+                    type:
+                      description: type of condition in CamelCase or in foo.example.com/CamelCase.
+                        --- Many .condition.type values are consistent across resources
+                        like Available, but because arbitrary conditions can be useful
+                        (see .node.status.conditions), the ability to deconflict is
+                        important. The regex it matches is (dns1123SubdomainFmt/)?(qualifiedNameFmt)
+                      maxLength: 316
+                      pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - message
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: profiles-leader-election-role
+  namespace: profiles-system
+rules:
+- apiGroups:
+  - ""
+  - coordination.k8s.io
+  resources:
+  - configmaps
+  - leases
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: profiles-manager-role
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - source.toolkit.fluxcd.io
+  resources:
+  - gitrepositories
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - source.toolkit.fluxcd.io
+  resources:
+  - gitrepositories/finalizers
+  verbs:
+  - create
+  - delete
+  - get
+  - patch
+  - update
+- apiGroups:
+  - source.toolkit.fluxcd.io
+  resources:
+  - gitrepositories/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - weave.works
+  resources:
+  - profilecatalogsources
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - weave.works
+  resources:
+  - profilecatalogsources/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - weave.works
+  resources:
+  - profilecatalogsources/status
+  verbs:
+  - get
+  - patch
+  - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: profiles-metrics-reader
+rules:
+- nonResourceURLs:
+  - /metrics
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: profiles-proxy-role
+rules:
+- apiGroups:
+  - authentication.k8s.io
+  resources:
+  - tokenreviews
+  verbs:
+  - create
+- apiGroups:
+  - authorization.k8s.io
+  resources:
+  - subjectaccessreviews
+  verbs:
+  - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: profiles-leader-election-rolebinding
+  namespace: profiles-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: profiles-leader-election-role
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: profiles-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: profiles-manager-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: profiles-manager-role
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: profiles-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: profiles-proxy-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: profiles-proxy-role
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: profiles-system
+---
+apiVersion: v1
+data:
+  controller_manager_config.yaml: |
+    apiVersion: controller-runtime.sigs.k8s.io/v1alpha1
+    kind: ControllerManagerConfig
+    health:
+      healthProbeBindAddress: :8081
+    metrics:
+      bindAddress: 127.0.0.1:8080
+    webhook:
+      port: 9443
+    leaderElection:
+      leaderElect: true
+      resourceName: b061522d.weave.works
+kind: ConfigMap
+metadata:
+  name: profiles-manager-config
+  namespace: profiles-system
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    control-plane: controller-manager
+  name: profiles-catalog-service
+  namespace: profiles-system
+spec:
+  ports:
+  - name: http
+    port: 8000
+  selector:
+    control-plane: controller-manager
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    control-plane: controller-manager
+  name: profiles-controller-manager-metrics-service
+  namespace: profiles-system
+spec:
+  ports:
+  - name: https
+    port: 8443
+    targetPort: https
+  selector:
+    control-plane: controller-manager
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    control-plane: controller-manager
+  name: profiles-controller-manager
+  namespace: profiles-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      control-plane: controller-manager
+  template:
+    metadata:
+      labels:
+        control-plane: controller-manager
+    spec:
+      containers:
+      - args:
+        - --secure-listen-address=0.0.0.0:8443
+        - --upstream=http://127.0.0.1:8080/
+        - --logtostderr=true
+        - --v=10
+        image: gcr.io/kubebuilder/kube-rbac-proxy:v0.5.0
+        name: kube-rbac-proxy
+        ports:
+        - containerPort: 8443
+          name: https
+      - args:
+        - --health-probe-bind-address=:8081
+        - --metrics-bind-address=127.0.0.1:8080
+        - --leader-elect
+        command:
+        - /manager
+        image: weaveworks/profiles-controller:v0.0.11
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        name: manager
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8081
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        resources:
+          limits:
+            cpu: 100m
+            memory: 30Mi
+          requests:
+            cpu: 100m
+            memory: 20Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+      securityContext:
+        runAsUser: 65532
+      terminationGracePeriodSeconds: 10

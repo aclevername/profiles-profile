@@ -1,0 +1,12 @@
+apiVersion: weave.works/v1alpha1
+kind: ProfileDefinition
+metadata:
+  name: profiles-crd-and-controller
+spec:
+  name: profiles-crd-and-controller
+  description: Profile for profiles CRDs and controller
+  maintainer: aclevername
+  artifacts:
+    - name: profiles-crd-and-controllers
+      kustomize:
+        path: profiles-crd-and-controllers
